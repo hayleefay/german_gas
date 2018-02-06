@@ -1,0 +1,5 @@
+# ignore giant data files
+gasoline.csv
+Fulldata.dta
+
+.DS_Store
