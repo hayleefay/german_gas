@@ -5,7 +5,7 @@ import numpy as np
 
 # import data
 print("💾 Start importing data")
-df = pd.read_csv("german_gas/gasoline.csv")
+df = pd.read_csv("gasoline.csv")
 print("✅ Done importing data")
 
 # define features and label

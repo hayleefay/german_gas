@@ -17,6 +17,10 @@ print("💾 Start importing data")
 df = pd.read_csv("gasoline.csv")
 print("✅ Done importing data")
 
+# remove nans
+import pdb; pdb.set_trace()
+df = df.dropna(axis=0, how='any')
+
 # define features and label
 print("✂️ Divide data")
 # removing `marke` and `date` for now, figure out how to include string
@@ -26,7 +30,7 @@ X = pd.DataFrame.as_matrix(df, columns=['autobahn', 'aral', 'esso',
                                         'eurusd', 'vehicles'])
 y = pd.DataFrame.as_matrix(df, columns=['e5gas'])
 
-import pdb; pdb.set_trace()
+# import pdb; pdb.set_trace()
 
 
 def baseline_model():
