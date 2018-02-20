@@ -15,6 +15,8 @@ This is the code for the thesis for my master's degree in computational social s
 - [ ] Check interpretation
 - [ ] Clean up code
 - [ ] Run on Google Cloud
-- [ ] Try without various predictors
+- [ ] Try without various predictors and see how successful for how many days
 - [ ] Try mean absolute error
 - [ ] Normalize data
+- [ ] Create my own training/validation sets so that it is predicting future rather than intermediate days
+- [ ] Measure diminishing accuracy and plot
