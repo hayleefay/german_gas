@@ -1,7 +1,7 @@
 # ignore giant data files
 gasoline.csv
 Fulldata.dta
-prepared_gasoline.csv
+*_gasoline.csv
 
 .DS_Store
 .ipynb_checkpoints/

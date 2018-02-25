@@ -1,42 +1,108 @@
+'''
+Maybe the (n, steps, input_features) can be a tuple for each location in every
+time period so it would be input_features = 350 ish. steps seems like it should
+be about 10 or so. Not sure what n is.
+'''
 import pandas as pd
-from datetime import datetime
+import numpy as np
+import keras
+from keras.models import Sequential
+from keras.layers.core import Dense, Activation
+from keras.layers.recurrent import LSTM
 
 
-def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
+def _load_data(data, n_prev=1):
     """
-    Frame a time series as a supervised learning dataset.
-    Arguments:
-        data: Sequence of observations as a list or NumPy array.
-        n_in: Number of lag observations as input (X).
-        n_out: Number of observations as output (y).
-        dropnan: Boolean whether or not to drop rows with NaN values.
-    Returns:
-        Pandas DataFrame of series framed for supervised learning.
+    data should be pd.DataFrame()
     """
-    n_vars = 1 if type(data) is list else data.shape[1]
-    df = DataFrame(data)
-    cols, names = list(), list()
-    # input sequence (t-n, ... t-1)
-    for i in range(n_in, 0, -1):
-        cols.append(df.shift(i))
-        names += [('var%d(t-%d)' % (j+1, i)) for j in range(n_vars)]
-    # forecast sequence (t, t+1, ... t+n)
-    for i in range(0, n_out):
-        cols.append(df.shift(-i))
-        if i == 0:
-            names += [('var%d(t)' % (j+1)) for j in range(n_vars)]
-        else:
-            names += [('var%d(t+%d)' % (j+1, i)) for j in range(n_vars)]
-    # put it all together
-    agg = pd.concat(cols, axis=1)
-    agg.columns = names
-    # drop rows with NaN values
-    if dropnan:
-        agg.dropna(inplace=True)
-    return agg
+
+    docX, docY = [], []
+    for i in range(len(data)-n_prev):
+        docX.append(data.iloc[i:i+n_prev].as_matrix())
+        docY.append(data.iloc[i+n_prev].as_matrix())
+    alsX = np.array(docX)
+    alsY = np.array(docY)
+
+    return alsX, alsY
 
 
-data = read_csv("./../data/prepared_gasoline.csv")
+def train_test_split(df, test_size=0.1):
+    """
+    This just splits data to training and testing parts
+    """
+    ntrn = round(len(df) * (1 - test_size))
+
+    X_train, y_train = _load_data(df.iloc[0:ntrn])
+    X_test, y_test = _load_data(df.iloc[ntrn:])
+
+    return (X_train, y_train), (X_test, y_test)
+
+
+print("read in data")
+data = pd.read_csv("./../data/grouped_gasoline.csv")
+
+print("build the model")
+in_out_neurons = 232304
+hidden_neurons = 300
+
+model = Sequential()
+model.add(LSTM(hidden_neurons, return_sequences=False,
+               input_shape=(None, in_out_neurons)))
+model.add(Dense(in_out_neurons, input_dim=hidden_neurons))
+model.add(Activation("linear"))
+model.compile(loss="mean_squared_error", optimizer="rmsprop")
+
+print("separate train and test")
+(X_train, y_train), (X_test, y_test) = train_test_split(data)
+
+# should write these to csv so I don't have to do it every time
+
+print("train the model")
+# and now train the model
+# batch_size should be appropriate to your memory size
+# number of epochs should be higher for real world problems
+model.fit(X_train, y_train, batch_size=50, epochs=1, validation_split=0.05)
+
+print("root mean squared error")
+predicted = model.predict(X_test)
+rmse = np.sqrt(((predicted - y_test) ** 2).mean(axis=0))
+
+# import pandas as pd
+# from datetime import datetime
+#
+#
+# def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
+#     """
+#     Frame a time series as a supervised learning dataset.
+#     Arguments:
+#         data: Sequence of observations as a list or NumPy array.
+#         n_in: Number of lag observations as input (X).
+#         n_out: Number of observations as output (y).
+#         dropnan: Boolean whether or not to drop rows with NaN values.
+#     Returns:
+#         Pandas DataFrame of series framed for supervised learning.
+#     """
+#     n_vars = 1 if type(data) is list else data.shape[1]
+#     df = DataFrame(data)
+#     cols, names = list(), list()
+#     # input sequence (t-n, ... t-1)
+#     for i in range(n_in, 0, -1):
+#         cols.append(df.shift(i))
+#         names += [('var%d(t-%d)' % (j+1, i)) for j in range(n_vars)]
+#     # forecast sequence (t, t+1, ... t+n)
+#     for i in range(0, n_out):
+#         cols.append(df.shift(-i))
+#         if i == 0:
+#             names += [('var%d(t)' % (j+1)) for j in range(n_vars)]
+#         else:
+#             names += [('var%d(t+%d)' % (j+1, i)) for j in range(n_vars)]
+#     # put it all together
+#     agg = pd.concat(cols, axis=1)
+#     agg.columns = names
+#     # drop rows with NaN values
+#     if dropnan:
+#         agg.dropna(inplace=True)
+#     return agg
 
 
 

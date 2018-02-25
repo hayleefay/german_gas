@@ -7,7 +7,7 @@ def parse(x):
 
 
 dataset = read_csv('gasoline.csv', parse_dates=['date'],
-                      index_col=0, date_parser=parse)
+                   index_col=0, date_parser=parse)
 # drop unnecessary -- bring back marke later
 dataset.drop(['mts_id', 'intid', 'marke', 'year', 'month', 'day', 'vehicles1',
               'latitudezst', 'longitudezst', 'brentl', 'd1', 'zst1'],
