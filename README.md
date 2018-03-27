@@ -6,6 +6,7 @@ This is the code for the thesis for my master's degree in computational social s
 ### Data prep
 - [x] Add integer of days passed and reorder
 - [ ] Make trend stationary
+- [x] Remove data from final day because no lag available
 
 ### Exploratory
 - [ ] Create maps (color coded accuracy)
@@ -18,7 +19,6 @@ This is the code for the thesis for my master's degree in computational social s
 - [x] Add integer for each station in the data
 - [ ] Check out plm in R
 - [ ] Cross-validation iterators for grouped data
-
 
 ### Neural Net
 - [ ] One hot encode `marke`
@@ -33,3 +33,4 @@ This is the code for the thesis for my master's degree in computational social s
 
 ### Questions for Dr. Anselin
 1. VAR
+2. Remove time trend -- is it actually seasonal and how to without removing first year?
