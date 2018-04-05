@@ -5,7 +5,6 @@ This is the code for the thesis for my master's degree in computational social s
 
 ### Data prep
 - [x] Add integer of days passed and reorder
-- [ ] Make trend stationary
 - [x] Remove data from final day because no lag available
 
 ### Exploratory
@@ -28,9 +27,10 @@ This is the code for the thesis for my master's degree in computational social s
 - [x] Normalize data
 - [ ] Measure diminishing accuracy and plot
 - [ ] So if I don't reorder by date before splitting train/test then the error is much lower. The error is lower when the data is ordered by station and then num_days when split rather than num_days and then station. This means it is better at predicting entire stations than it is at predicting that last however many days of ALL stations.
+- [ ] Figure out how to build it for more than one time period in the future
 
 ### Random forest
 
 ### Questions for Dr. Anselin
-1. VAR
-2. Remove time trend -- is it actually seasonal and how to without removing first year?
+1. The averages are endogenous and so removed them from the right side and the resulting linear was barely altered. 0.2 to 0.21 without.
+2. There is no trend to make stationary.
