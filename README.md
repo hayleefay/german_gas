@@ -14,15 +14,10 @@ This is the code for the thesis for my master's degree in computational social s
 
 ### Linear
 
-### VAR/Panel OLS
-- [x] Add integer for each station in the data
-- [ ] Check out plm in R
-- [ ] Cross-validation iterators for grouped data
-
 ### Neural Net
 - [ ] One hot encode `marke`
 - [ ] Try test cases of predictions
-- [ ] Run on Google Cloud
+- [x] Run on Google Cloud
 - [ ] Try without various predictors and see how successful for how many days
 - [x] Normalize data
 - [ ] Measure diminishing accuracy and plot
@@ -30,7 +25,14 @@ This is the code for the thesis for my master's degree in computational social s
 - [ ] Figure out how to build it for more than one time period in the future
 
 ### Random forest
+- [x] Tune on Google Cloud
 
-### Questions for Dr. Anselin
-1. The averages are endogenous and so removed them from the right side and the resulting linear was barely altered. 0.2 to 0.21 without.
-2. There is no trend to make stationary.
+### Google Cloud Commands
+- SSH: `gcloud compute --project "german-zipcodes-1520272242108" ssh --zone "us-central1-f" "instance-1"`
+- Copy (small) files: `gcloud compute scp cloud_train.py "instance-1":~/gas/code/cloud_train.py`
+ - Do not do this while SSH'd
+- `nohup python3 -u file.py &`
+ - The file it outputs to is `nohup.out`
+ - `cd` into repo with file
+- `ps -e | grep py`
+ - To check if running
