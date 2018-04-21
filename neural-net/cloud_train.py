@@ -1,12 +1,15 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime
 from math import sqrt
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import MinMaxScaler
 from numpy import concatenate
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
-from pprint import pprint
-import random
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+import keras
 
 # read in the data
 df = pd.read_csv("./../data/supervised_1_1.csv")
@@ -61,85 +64,37 @@ test_values = test.values
 # split into input and outputs
 train_X, train_y = train_values[:, n_seq:], train_values[:, :n_seq]
 test_X, test_y = test_values[:, n_seq:], test_values[:, :n_seq]
+# reshape input to be 3D [samples, timesteps, features]
+train_X = train_X.reshape((train_X.shape[0], 1, train_X.shape[1]))
+test_X = test_X.reshape((test_X.shape[0], 1, test_X.shape[1]))
 print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
 
-# Number of trees in random forest
-n_estimators = [int(x) for x in np.linspace(start=10, stop=2000, num=10)]
-# Number of features to consider at every split
-max_features = ['auto', 'sqrt']
-# Maximum number of levels in tree
-max_depth = [int(x) for x in np.linspace(10, 110, num=11)]
-# max_depth.append(None)
-# Minimum number of samples required to split a node
-min_samples_split = [2, 5, 10]
-# Minimum number of samples required at each leaf node
-min_samples_leaf = [1, 2, 4]
+neurons = 50
+epochs = 500
+bs = 1000
 
+print("neurons:", neurons)
+print("epochs:", epochs)
+print("batch size:", bs)
 
-# for i in range(10):
-#     md = random.choice(max_depth)
-#     ne = random.choice(n_estimators)
-#     mf = random.choice(max_features)
-#     mss = random.choice(min_samples_split)
-#     msl = random.choice(min_samples_leaf)
-#
-#     print("max_depth:", md)
-#     print("n_estimators:", ne)
-#     print("max_features:", mf)
-#     print("min_samples_split:", mss)
-#     print("min_samples_leaf:", msl)
-#
-#     # fit random forest
-#     model = RandomForestRegressor(max_depth=md, random_state=0,
-#                                   n_estimators=ne, max_features=mf,
-#                                   min_samples_split=mss,
-#                                   min_samples_leaf=msl,
-#                                   n_jobs=-1)
-#     model.fit(train_X, train_y.ravel())
-#     # make a prediction
-#     yhat = model.predict(test_X)
-#     # invert scaling for forecast
-#     yhat = yhat.reshape((len(yhat), 1))
-#     inv_yhat = concatenate((yhat, test_X[:, 0:]), axis=1)
-#     print(inv_yhat.shape)
-#     inv_yhat = scaler.inverse_transform(inv_yhat)
-#     inv_yhat = inv_yhat[:, 0]
-#     # invert scaling for actual
-#     test_y = test_y.reshape((len(test_y), 1))
-#     inv_y = concatenate((test_y, test_X[:, 0:]), axis=1)
-#     inv_y = scaler.inverse_transform(inv_y)
-#     inv_y = inv_y[:, 0]
-#     # calculate RMSE
-#     rmse = sqrt(mean_squared_error(inv_y, inv_yhat))
-#     print('Test RMSE: %.3f' % rmse)
-#     print('\n\n')
+# design network
+model = Sequential()
+model.add(LSTM(neurons, input_shape=(train_X.shape[1], train_X.shape[2])))
+model.add(Dense(n_seq))
+model.compile(loss='mae', optimizer='adam')
+# early stopping
+es = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0,
+                                   patience=5, verbose=2, mode='auto')
+# fit network
+history = model.fit(train_X, train_y, epochs=epochs, batch_size=bs,
+                    validation_data=(test_X, test_y), verbose=2, shuffle=False,
+                    callbacks=[es])
 
-
-md = 25
-ne = 50
-mf = 'auto'
-mss = 2
-msl = 1
-
-print("max_depth:", md)
-print("n_estimators:", ne)
-print("max_features:", mf)
-print("min_samples_split:", mss)
-print("min_samples_leaf:", msl)
-
-# fit random forest
-model = RandomForestRegressor(max_depth=md, random_state=0,
-                              n_estimators=ne, max_features=mf,
-                              min_samples_split=mss,
-                              min_samples_leaf=msl,
-                              n_jobs=-1)
-model.fit(train_X, train_y.ravel())
 # make a prediction
 yhat = model.predict(test_X)
+test_X = test_X.reshape((test_X.shape[0], test_X.shape[2]))
 # invert scaling for forecast
-yhat = yhat.reshape((len(yhat), 1))
 inv_yhat = concatenate((yhat, test_X[:, 0:]), axis=1)
-print(inv_yhat.shape)
 inv_yhat = scaler.inverse_transform(inv_yhat)
 inv_yhat = inv_yhat[:, 0]
 # invert scaling for actual
